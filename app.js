@@ -137,30 +137,28 @@ getRemaining();
 const getRoundedPrice = async () => {
   const allBeers = await fetchData(beerURL);
 
-  const allBeerCopy = allBeers.slice(0);
-  allBeerCopy.map((beer) => {
+  const allBeersRounded = allBeers.slice(0);
+
+  allBeersRounded.map((beer) => {
     beer.price = Number(beer.price);
+    return Object.assign(beer, { rounded: Math.ceil(beer.price / 100) * 100 });
   });
 
-  const roundedObj = allBeerCopy.map((obj) => {
-    return Object.assign(obj, { rounded: Math.ceil(obj.price / 100) * 100 });
-  });
-
-  const newObj = Object.assign(
-    {},
-    ...roundedObj.map((item) => ({
-      [item.rounded]: roundedObj
+  const beerIDs = allBeersRounded.reduce(
+    (acc, current) => (
+      (acc[current.rounded] = allBeersRounded
         .filter((x) => {
-          if (item.rounded === x.rounded) {
+          if (current.rounded === x.rounded) {
             return x;
           }
         })
-        .map((x) => x.id),
-    }))
+        .map((x) => x.id)),
+      acc
+    ),
+    {}
   );
 
-  console.log(JSON.stringify(newObj));
-  return JSON.stringify(newObj);
+  return JSON.stringify(beerIDs);
 };
 
 getRoundedPrice();
